@@ -5,6 +5,7 @@ using System.Web;
 using System.Web.Mvc;
 using MVC5Course.Models;
 using System.Data.Entity.Validation;
+using System.Data.Entity;
 
 namespace MVC5Course.Controllers
 {
@@ -25,8 +26,8 @@ namespace MVC5Course.Controllers
             };
             //db.Product.Add(product);
             SaveChanges();
-
-
+            
+           
             var pkey = product.ProductId;
             //var data = db.Product.ToList();
             var data = db.Product.OrderByDescending(p => p.ProductId).AsQueryable();
@@ -43,6 +44,7 @@ namespace MVC5Course.Controllers
                 item.Price = item.Price + 1;
 
             }
+            //db.Database.ExecuteSqlCommand("update dbo....")
             SaveChanges();
             return View(data);
         }
@@ -73,6 +75,22 @@ namespace MVC5Course.Controllers
         {
             db.OrderLine.RemoveRange(product.OrderLine);
             db.Product.Remove(product);
+        }
+        public ActionResult QueryPlan(int num = 10)
+        {
+            var data = db.Product
+                .Include(t => t.OrderLine)
+                .OrderBy(p => p.ProductId)
+                .AsQueryable();
+
+            //var data = db.Database.SqlQuery<Product>(@"
+            //select * 
+            //FROM dbo.Product p 
+            //WHERE
+            //    p.ProductId < @p0
+            //        ", num);
+            db.usp_Fabrics(10, 10); //呼叫StoreProcedure
+            return View(data);
         }
         private void SaveChanges()
         {
